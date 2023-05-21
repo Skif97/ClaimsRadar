@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "start-in-singleplayer": {
+      "commandName": "Executable",
+      "executablePath": "$(VINTAGE_STORY)\\$(GameVersion)\\Vintagestory.exe",
+      "commandLineArgs": "--addModPath=\"$(SolutionDir)\\Testing\"  --addOrigin=\"$(AssetsPath)\" "
+    }
+  }
+}
