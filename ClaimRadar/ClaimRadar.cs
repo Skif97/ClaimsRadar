@@ -25,6 +25,9 @@ namespace ClaimRadar
 
         private ICoreClientAPI capi;
         private List<LandClaim> claims;
+        private bool show = false;
+        private long timerForUpdateClaimRadar;
+        private long countShowClaim = 0;
 
         public override void StartClientSide(ICoreClientAPI api)
         {
@@ -32,61 +35,92 @@ namespace ClaimRadar
             capi = api;
             api.Input.RegisterHotKey(
               "showClaims",
-              Lang.Get("show claims"),
+              Lang.Get("Show claims"),
               GlKeys.R,
               HotkeyType.GUIOrOtherControls);
 
-            api.Input.SetHotKeyHandler("showClaims", UpdateClaimRadar);
+            api.Input.SetHotKeyHandler("showClaims", OnOffClaimRadar);
 
             claims = new List<LandClaim>();
 
         }
 
-        private bool UpdateClaimRadar(KeyCombination keyCombination) 
+        private bool OnOffClaimRadar(KeyCombination keyCombination) 
         {
+            if (!show) 
+            {
+                show = true;
+                timerForUpdateClaimRadar = capi.World.RegisterGameTickListener(new Action<float>(UpdateClaimRadar), 1000, 0);
+                GenerateListShowClaim();
+                AddClaimsToHighlight();
+            }
+            else 
+            {
+                show = false;
+                capi.World.UnregisterGameTickListener(timerForUpdateClaimRadar);
+                ClearHighlightBlocks();
 
-            GenerateListShowClaim(capi.World.Player);
-            AddClaimsToHighlight(capi.World.Player);
+
+            }
             return true;
         }
 
-        private void GenerateListShowClaim(IClientPlayer byPlayer) 
+        private void ClearHighlightBlocks() 
+        {
+            for (int i = 0; i < countShowClaim; i++)
+            {
+                capi.World.HighlightBlocks(capi.World.Player, i + 100, new List<BlockPos>(), EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Cube);
+            }
+        }
+
+        private void UpdateClaimRadar(float dt) 
+        {
+            GenerateListShowClaim();
+            AddClaimsToHighlight();
+        }
+
+
+
+        private void GenerateListShowClaim() 
         {
             claims.Clear();
             List<LandClaim> allClaims = capi.World.Claims.All.ToList();
             foreach (LandClaim claim in allClaims) 
             {
-                if (claim.OwnedByPlayerUid == null) continue;
-                if (byPlayer.Entity.Pos.DistanceTo(claim.Areas[0].Center.ToBlockPos().ToVec3d()) < 150.0) 
+                foreach (Cuboidi area in claim.Areas)
                 {
-                    claims.Add(claim);
-                }
+                    if (capi.World.Player.Entity.Pos.DistanceTo(area.Center.ToBlockPos().ToVec3d()) < 300.0 ||
+                        capi.World.Player.Entity.Pos.DistanceTo(area.Start.ToBlockPos().ToVec3d()) < 300.0 ||
+                        capi.World.Player.Entity.Pos.DistanceTo(area.End.ToBlockPos().ToVec3d()) < 300.0)
+                    {
+                        claims.Add(claim);
+                    }
+                } 
             }
         }
-        private void AddClaimsToHighlight(IClientPlayer byPlayer) 
+        private void AddClaimsToHighlight() 
         {
-            int i = 100;
+            int i = 0;
             List<BlockPos> list = new List<BlockPos>();
             foreach(LandClaim claim in claims) 
             {
                 foreach(Cuboidi area in claim.Areas) 
                 {
                     list.Clear();
-                    for (int j = 0; area.MinX+j< area.MaxX; j++) 
-                    {
-                        for (int k = 0; area.MinY + k < area.MaxY; k++)
-                        {
-                            for (int h = 0; area.MinZ + h < area.MaxZ; h++)
-                            {
-                                list.Add(new BlockPos(area.MinX + j, area.MinY + k, area.MinZ + h));
-                            }
-                        }
-                    }
-                    byPlayer.Entity.Api.World.HighlightBlocks(byPlayer, i, list);
+                    list.Add(new BlockPos(area.MinX, area.MinY, area.MinZ));
+                    list.Add(new BlockPos(area.MaxX, area.MaxY, area.MaxZ));
+                    capi.World.HighlightBlocks(capi.World.Player, i + 100, list, EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Cube);
                     i++;
                 }
                  
             }
+            
+            for(int j=i; j < countShowClaim; j++) 
+            {
+                capi.World.HighlightBlocks(capi.World.Player, j + 100, new List<BlockPos>(), EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Cube);
+            }
+            countShowClaim = i;
+
         }
     }
 
