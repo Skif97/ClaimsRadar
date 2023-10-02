@@ -94,6 +94,7 @@ namespace ClaimRadar
                         capi.World.Player.Entity.Pos.DistanceTo(area.End.ToBlockPos().ToVec3d()) < 300.0)
                     {
                         claims.Add(claim);
+                        break;
                     }
                 } 
             }
