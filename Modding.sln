@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32414.318
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClaimRadar", "ClaimRadar\ClaimRadar.csproj", "{0BC32370-D3B8-4764-84B6-018523F625F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClaimsRadar", "ClaimRadar\ClaimsRadar.csproj", "{0BC32370-D3B8-4764-84B6-018523F625F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

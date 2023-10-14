@@ -1,10 +1,10 @@
 {
   "type": "code",
-  "modid": "ClaimRadar",
-  "name": "Claim Radar",
+  "modid": "ClaimsRadar",
+  "name": "Claims Radar",
   "description": "This mod shows all claims around.",
   "author": "Skif_97",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "side": "client",
   "dependency": {
     "game": "1.18"

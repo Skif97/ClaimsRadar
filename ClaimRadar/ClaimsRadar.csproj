@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net462</TargetFramework>
+		<TargetFramework>net7</TargetFramework>
 	</PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <PropertyGroup>
-		<GameVersion>1.18.5</GameVersion>
+		<GameVersion>1.18.15</GameVersion>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -74,7 +74,6 @@
 		<Reference Include="$(VINTAGE_STORY)\$(GameVersion)\Mods\VSSurvivalMod.dll">
 			<Private>false</Private>
 		</Reference>
-    <Reference Include="System.Management" />
 	</ItemGroup>
 
 

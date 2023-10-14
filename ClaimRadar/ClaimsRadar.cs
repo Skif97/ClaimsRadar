@@ -13,6 +13,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
+using Vintagestory.Client.NoObf;
 using Vintagestory.Common;
 using Vintagestory.GameContent;
 using Vintagestory.Server;
@@ -76,6 +77,7 @@ namespace ClaimRadar
         private void UpdateClaimRadar(float dt) 
         {
             GenerateListShowClaim();
+            ClearHighlightBlocks();
             AddClaimsToHighlight();
         }
 
@@ -89,9 +91,9 @@ namespace ClaimRadar
             {
                 foreach (Cuboidi area in claim.Areas)
                 {
-                    if (capi.World.Player.Entity.Pos.DistanceTo(area.Center.ToBlockPos().ToVec3d()) < 300.0 ||
-                        capi.World.Player.Entity.Pos.DistanceTo(area.Start.ToBlockPos().ToVec3d()) < 300.0 ||
-                        capi.World.Player.Entity.Pos.DistanceTo(area.End.ToBlockPos().ToVec3d()) < 300.0)
+                    if (DistanceXZTo(capi.World.Player.Entity.Pos, area.Center.ToBlockPos()) < ClientSettings.ViewDistance ||
+                        DistanceXZTo(capi.World.Player.Entity.Pos, area.Start.ToBlockPos()) < ClientSettings.ViewDistance ||
+                        DistanceXZTo(capi.World.Player.Entity.Pos, area.End.ToBlockPos()) < ClientSettings.ViewDistance)
                     {
                         claims.Add(claim);
                         break;
@@ -99,30 +101,57 @@ namespace ClaimRadar
                 } 
             }
         }
+
+        private double DistanceXZTo(EntityPos player, BlockPos cube) 
+        {
+            
+            return Math.Sqrt(Math.Pow(player.X - cube.X, 2) + Math.Pow(player.Z - cube.Z, 2));
+        }
         private void AddClaimsToHighlight() 
         {
             int i = 0;
             List<BlockPos> list = new List<BlockPos>();
             foreach(LandClaim claim in claims) 
             {
-                foreach(Cuboidi area in claim.Areas) 
+                List<int> colors = new List<int>{OwnerNameToColor(claim.LastKnownOwnerName)};
+                foreach (Cuboidi area in claim.Areas) 
                 {
                     list.Clear();
                     list.Add(new BlockPos(area.MinX, area.MinY, area.MinZ));
                     list.Add(new BlockPos(area.MaxX, area.MaxY, area.MaxZ));
-                    capi.World.HighlightBlocks(capi.World.Player, i + 100, list, EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Cube);
+                    capi.World.HighlightBlocks(capi.World.Player, i + 100, list, colors, EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Cube);
                     i++;
                 }
                  
             }
-            
-            for(int j=i; j < countShowClaim; j++) 
-            {
-                capi.World.HighlightBlocks(capi.World.Player, j + 100, new List<BlockPos>(), EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Cube);
-            }
             countShowClaim = i;
 
         }
+
+        public static int OwnerNameToColor(string input)
+        {
+            const uint firstPrime = 328514948;
+            const uint secondPrime = 221669321;
+            const uint thirdPrime = 301287251;
+
+            const uint FNVOffsetBasis = 2166136261;
+
+            uint hashR = FNVOffsetBasis;
+            uint hashG = FNVOffsetBasis;
+            uint hashB = FNVOffsetBasis;
+            foreach (byte c in input)
+            {
+                hashR *= firstPrime;
+                hashR ^= c;
+                hashG *= secondPrime;
+                hashG ^= c;
+                hashB *= thirdPrime;
+                hashB ^= c;
+            }
+
+             return ColorUtil.ToRgba(150, (int)(hashR % 256), (int)(hashG % 256), (int)(hashB % 256));
+        }
+
     }
 
 }
